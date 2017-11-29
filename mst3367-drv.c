@@ -29,6 +29,7 @@
 #include <media/v4l2-ctrls.h>
 //#include <media/i2c/mst3367.h>
 #include "mst3367-drv.h"
+#include "mst3367-common.h"
 
 static int debug;
 module_param_named(debug, debug, int, 0644);
@@ -114,17 +115,6 @@ F0 :
 
 */
 
-struct mst3367_video_standards_s {
-	struct v4l2_dv_timings timings;
-	u32 htotal_min, htotal_max;
-	u32 vtotal_min, vtotal_max;
-	u32 hperiod_min, hperiod_max;
-	u32 vperiod_min, vperiod_max;
-	u32 interleaved;
-	u32 encoded_fps;
-	u32 hdmi_fpsX100;
-};
-
 // http://www.3dexpress.de/displayconfigx/timings.html
 static const struct mst3367_video_standards_s mst3367_video_standards[] = {
 /*                                                                                                   encoded      HDMI */
@@ -145,40 +135,6 @@ static const struct mst3367_video_standards_s mst3367_video_standards[] = {
 	{ V4L2_DV_BT_CEA_1920X1080P30, 2295, 3305, 1120, 1130,  330,  345,  290,  310,            0,      30,     3000, },
 	{ V4L2_DV_BT_CEA_1920X1080P50, 3950, 3970, 1120, 1130,  550,  570,  480,  520,            0,      25,     5000, },
 	{ V4L2_DV_BT_CEA_1920X1080P60, 3290, 3310, 1120, 1130,  665,  685,  595,  605,            0,      30,     6000, },
-};
-
-struct mst3367_state {
-	struct mst3367_platform_data pdata;
-
-	struct v4l2_subdev sd;
-	struct v4l2_ctrl_handler hdl;
-
-	/* Is the mst3367 powered on? */
-	bool power_on;
-	bool haveSource;
-
-	/* controls */
-	struct v4l2_ctrl *hotplug_ctrl;
-	struct v4l2_ctrl *rx_sense_ctrl;
-
-	/* i2c */
-	struct i2c_adapter *i2c;
-	u8 i2c_addr;
-	u8 current_bank;
-
-	/* Detection */
-	const struct mst3367_video_standards_s *detectedStandard;
-	int detectedSignal;
-	struct {
-		u32 htotal, vtotal, hperiod, vperiod, detectdelay, hactive, interleaved;
-	} currentTimings;
-
-	/* Shadow regs for monitoring writes. */
-	u8 regs[4][256];
-	u8 regs_updated[4][256];
-
-	u8 regb1r01_cached;
-	u8 regb2r48_cached;
 };
 
 static const struct mst3367_video_standards_s *findVideoStandard(u32 htotal, u32 vtotal, u32 hperiod, u32 vperiod, u32 interleaved)
