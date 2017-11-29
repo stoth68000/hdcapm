@@ -18,6 +18,19 @@
 #ifndef MST3367_COMMON_H
 #define MST3367_COMMON_H
 
+#include <linux/v4l2-dv-timings.h>
+#include <media/v4l2-device.h>
+#include <media/v4l2-common.h>
+#include <media/v4l2-dv-timings.h>
+#include <media/v4l2-ctrls.h>
+
+#include "mst3367-drv.h"
+
+#define dprintk(level, fmt, arg...)\
+	do { if (debug >= level)\
+		printk(KERN_DEBUG KBUILD_MODNAME ": " fmt, ## arg);\
+	} while (0)
+
 struct mst3367_video_standards_s {
 	struct v4l2_dv_timings timings;
 	u32 htotal_min, htotal_max;

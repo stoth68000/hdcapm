@@ -22,11 +22,6 @@
 #include <linux/delay.h>
 #include <linux/videodev2.h>
 #include <linux/workqueue.h>
-#include <linux/v4l2-dv-timings.h>
-#include <media/v4l2-device.h>
-#include <media/v4l2-common.h>
-#include <media/v4l2-dv-timings.h>
-#include <media/v4l2-ctrls.h>
 //#include <media/i2c/mst3367.h>
 #include "mst3367-drv.h"
 #include "mst3367-common.h"
@@ -34,11 +29,6 @@
 static int debug;
 module_param_named(debug, debug, int, 0644);
 MODULE_PARM_DESC(debug, "debug level [def: 0]");
-
-#define dprintk(level, fmt, arg...)\
-        do { if (debug >= level)\
-                printk(KERN_DEBUG KBUILD_MODNAME ": " fmt, ## arg);\
-        } while (0)
 
 MODULE_DESCRIPTION("Driver for MST3367 HDMI receiver");
 MODULE_AUTHOR("Steven Toth <stoth@kernellabs.com>");
