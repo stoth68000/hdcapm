@@ -1,0 +1,89 @@
+Updated: 2017-11-17
+
+1. The following user controls are non-functional
+   brightness (int)    : min=0 max=255 step=1 default=127 value=127 flags=slider
+
+2. The following codec controls are non-functional
+   audio_mute (bool)   : default=0 value=0
+
+3. Usercontrols for contrast, hue etc to be investigated.
+   Do they work under windows?
+
+4. EDID software loading to be investigated.
+
+5. Repeated attempts to start a capture can result in no audio being present.
+   The firmware likely has to be reloaded (as per the window driver) between
+   attempts.
+
+6. ARM capture randomly stops (5-10 mins of running), to be investigated
+   with the analyzer and driver instrumented.
+
+7. ARM capture performance is 13-15% cpu. Further optimization
+   of USB polling required.
+
+8. Occasionaly USB hangs on x86 and ARM require the stick to be disconnected
+   and reconnected. Rare, but they do happen, or can happen during firmware load.
+
+9. Video scaling via V4L2 APIs to be implemented.
+   Proven its working directly in driver, need APIs to drive it.
+
+10. HDMI 1280x720p30 fails to detect reliably, if at all.
+    Check this with the windows s/w and see if its capable.
+
+11. Circle back over the SOW and see if we're missing any key functionality.
+
+12. AES encryption IS NOT available in the firmware.
+    We can't implement this in H/W.
+
+13. (x86) gStreamer v4l2src io-mode=1 seems to only occasionally work.
+    The driver always starts, buffers all the data but gstreamer doesn't read the buffers,
+    so the driver eventually overflows.
+    To be investigated.
+
+14. gstreamer on ARM remains untested at this point.
+
+15. v4l2-compliance on x86/ARM has one failure, investigate
+		fail: v4l2-test-io-config.cpp(189): doioctl(node, VIDIOC_S_DV_TIMINGS, &enumtimings.timings)
+		fail: v4l2-test-io-config.cpp(239): Timings check failed for input 0.
+	test VIDIOC_ENUM/G/S/QUERY_DV_TIMINGS: FAIL
+
+16. DVI only input to be tested.
+
+17. Investigate custom PC/VESA style resolutions.
+
+18. codec controls to be fully tested for quality, so we have them the wrong way around in the h/w?
+    video_bitrate (int)    : min=2000000 max=20000000 step=100000 default=20000000 value=20000000
+    video_peak_bitrate (int)    : min=2000000 max=20000000 step=100000 default=20000000 value=20000000
+
+19. SD resolution 720x480p and 720x576p not implemented.
+
+20. Duration testing on ARM TBD
+
+21. First upstream code release / review.
+
+22. Review / Remove histogram code.
+
+23. Final cleanup of FW API document and publish.
+
+24. Req 2.1.14 calls for the HDMI serial number to be dumped to system log. This isn't available
+   in the HDMI address space. Can't meet this.
+
+25. Need to implement i-frame only mode.
+
+What streaming HAS been exercised (X86):
+ - Video detection of all 1280x720p modes, p30 broken.
+ - Test     75m 1280x720p60 (tivo HDCP). 10mbps, no issues, watching live in VLC (streaming via UDP).
+ - Test briefly 1280x720p30 (no hdcp), Frontend doesn't reliably lock.  Seems picky on this.
+ - Test briefly 1280x720p50 (no hdcp), 10mbps.
+ - Test briefly 1920x1080p24 (no hdcp), 10mbps. Video reported 24fps, looked a little jerky to me.
+ - Test briefly 1920x1080p25 (no hdcp), 10mbps. Video reported 25fps, looked a little jerky to me.
+ - Test briefly 1920x1080p50 (no hdcp), 10mbps. (framedropped to 25).
+ - Test briefly 1920x1080p30 (no hdcp), 10mbps.
+ - Test briefly 1920x1080p60 (no hdcp), 10mbps. (didn't framedrop as reported by vlc?)
+ - Correctly detecting and handling HDCP vs non HDCP
+
+What HAS been tested (ARM):
+ - Video detection of all 1280x720p modes, p30 broken.
+ - Test 15m 1280x720p60 (tivo HDCP). 10mbps, stalled after a few minutes (streaming via UDP).
+ - Correctly detecting and handling HDCP vs non HDCP
+

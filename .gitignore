@@ -1,0 +1,11 @@
+*.o.cmd
+*.o
+.hdcapm.ko.cmd
+.tmp_versions/
+Module.symvers
+hdcapm.ko
+hdcapm.mod.c
+modules.order
+mst3367.ko
+mst3367.mod.c
+.mst3367.ko.cmd
