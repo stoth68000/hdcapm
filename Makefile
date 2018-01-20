@@ -10,6 +10,8 @@ COLOR_OFF= \033[0m
 
 EXTRA_CPPFLAGS = ""
 
+DEVICE=/dev/video2
+
 mst3367-objs := mst3367-drv.o
 obj-m += mst3367.o
 
@@ -54,7 +56,7 @@ unload:
 	sudo /sbin/rmmod mst3367
 
 test:
-	dd if=/dev/video0 of=raw.ts bs=65535
+	dd if=$(DEVICE) of=raw.ts bs=65535
 
 mntcopy:
 	mount /KL/mnt
@@ -68,9 +70,10 @@ sshcopy:
 	#ssh root@192.168.0.11 "cat >/lib/firmware/v4l-hdcapm-audfw-01.fw" < v4l-hdcapm-audfw-01.fw
 
 stream:
-	v4l2-ctl --set-ctrl=video_bitrate=10000000
-	v4l2-ctl --set-ctrl=video_peak_bitrate=10000000
-	iso13818_util -i /dev/video0 -o udp://192.168.0.66:5005 -s
+	v4l2-ctl -d $(DEVICE) --set-ctrl=video_bitrate=10000000
+	v4l2-ctl -d $(DEVICE) --set-ctrl=video_peak_bitrate=10000000
+	v4l2-ctl -d $(DEVICE) --set-ctrl=video_gop_size=1
+	iso13818_util -i $(DEVICE) -o udp://192.168.0.66:5005 -s
 
 gstreamer:
 	#gst-launch-1.0 v4l2src device=/dev/video0 io-mode=1 ! video/mpegts,systemstream=true ! queue ! udpsink host=192.168.0.66 port=5005
