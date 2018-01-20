@@ -579,12 +579,14 @@ static int hdcapm_usb_probe(struct usb_interface *interface, const struct usb_de
 		goto fail3;
 	}
 
+#if ONETIME_FW_LOAD
 	/* Register the compression codec (it does both audio and video). */
 	if (hdcapm_compressor_register(dev) < 0) {
 		pr_err(KBUILD_MODNAME ": failed to register compressor\n");
 		ret = -EINVAL;
 		goto fail4;
 	}
+#endif
 
 	/* Attach HDMI receiver */
 	ret = v4l2_device_register(&interface->dev, &dev->v4l2_dev);
@@ -662,7 +664,7 @@ static int hdcapm_usb_probe(struct usb_interface *interface, const struct usb_de
 #if 0
 	hrtimer_start(&dev->hrtimer, 4000000, HRTIMER_MODE_ABS);
 #endif
-#endif
+#endif /* TIMER_EVAL */
 
 	return 0; /* Success */
 
@@ -675,8 +677,10 @@ fail8:
 fail6:
 	v4l2_device_unregister(&dev->v4l2_dev);
 fail5:
+#if ONETIME_FW_LOAD
 	hdcapm_compressor_unregister(dev);
 fail4:
+#endif
 	hdcapm_i2c_unregister(dev, &dev->i2cbus[1]);
 fail3:
 	hdcapm_i2c_unregister(dev, &dev->i2cbus[0]);
@@ -716,8 +720,10 @@ static void hdcapm_usb_disconnect(struct usb_interface *interface)
 
 	hdcapm_video_unregister(dev);
 
+#if ONETIME_FW_LOAD
 	/* Unregister the compression codec. */
 	hdcapm_compressor_unregister(dev);
+#endif
 
 	/* Unregister any I2C buses. */
 	hdcapm_i2c_unregister(dev, &dev->i2cbus[1]);

@@ -757,6 +757,14 @@ void hdcapm_compressor_run(struct hdcapm_dev *dev)
 	/* Make sure all of our buffers are available again. */
 	hdcapm_buffers_move_all(dev, &dev->list_buf_free, &dev->list_buf_used);
 
+#if !(ONETIME_FW_LOAD)
+	/* Register the compression codec (it does both audio and video). */
+	if (hdcapm_compressor_register(dev) < 0) {
+		pr_err(KBUILD_MODNAME ": failed to register compressor\n");
+		return;
+	}
+#endif
+
 	hdcapm_read32(dev, REG_0050, &val);
 	val &= ~0x04;
 	val &= ~0x02;
@@ -773,6 +781,10 @@ void hdcapm_compressor_run(struct hdcapm_dev *dev)
 	}
 
 	ret = firmware_transition(dev, 0, NULL);
+
+#if !(ONETIME_FW_LOAD)
+	hdcapm_compressor_unregister(dev);
+#endif
 
 	dev->state = STATE_STOPPED;
 

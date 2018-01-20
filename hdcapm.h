@@ -59,6 +59,7 @@ extern int hdcapm_debug;
 #define PIPE_EP4 0x04
 
 #define TIMER_EVAL 0
+#define ONETIME_FW_LOAD 1
 
 extern struct usb_device_id hdcapm_usb_id_table[];
 
