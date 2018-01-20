@@ -239,8 +239,10 @@ static int firmware_transition(struct hdcapm_dev *dev, int run, struct v4l2_dv_t
 
 	dprintk(1, "%s(%p, %s)\n", __func__, dev, run == 1 ? "START" : "STOP");
 	if (run) {
-		if (!timings)
+		if (!timings) {
+			pr_err(KBUILD_MODNAME ": no timing during firmware transition\n");
 			return -EINVAL;
+		}
 
 		/* Prepare the video/audio compression settings. */
 		i_width  = timings->bt.width;
@@ -249,8 +251,10 @@ static int firmware_transition(struct hdcapm_dev *dev, int run, struct v4l2_dv_t
 		vtotal   = V4L2_DV_BT_FRAME_HEIGHT(&timings->bt);
 		if (htotal * vtotal) {
 			timing_fpsx100 = div_u64((100 * (u64)timings->bt.pixelclock), (htotal * vtotal));
-		} else
+		} else {
+			pr_err(KBUILD_MODNAME ": no fps calulated\n");
 			return -EINVAL;
+		}
 
 		i_fps = timing_fpsx100 / 100;
 
