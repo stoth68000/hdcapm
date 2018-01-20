@@ -561,7 +561,9 @@ int hdcapm_compressor_register(struct hdcapm_dev *dev)
 //	BUG_ON(val != 0x00200406);
 #endif
 
+	/* Give the device enough time to boot its initial microcode. */
 	msleep(1000);
+
 	hdcapm_compressor_enable_firmware(dev, 0);
 
 	// 12570
