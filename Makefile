@@ -76,7 +76,7 @@ stream:
 	iso13818_util -i $(DEVICE) -o udp://192.168.0.66:5005 -s
 
 gstreamer:
-	#gst-launch-1.0 v4l2src device=/dev/video0 io-mode=1 ! video/mpegts,systemstream=true ! queue ! udpsink host=192.168.0.66 port=5005
-	#gst-launch-1.0 v4l2src device=/dev/video0 io-mode=1 ! video/mpegts,systemstream=true ! queue ! udpsink host=192.168.0.66 port=5005 buffer-size=1316
-	gst-launch-1.0 v4l2src device=/dev/video0 io-mode=1 ! video/mpegts,systemstream=true ! queue ! filesink location=test.ts
+	#gst-launch-1.0 v4l2src device=$(DEVICE) io-mode=1 ! video/mpegts,systemstream=true ! queue ! udpsink host=192.168.0.66 port=5005
+	#gst-launch-1.0 v4l2src device=$(DEVICE) io-mode=1 ! video/mpegts,systemstream=true ! queue ! udpsink host=192.168.0.66 port=5005 buffer-size=1316
+	gst-launch-1.0 v4l2src device=$(DEVICE) io-mode=1 ! video/mpegts,systemstream=true ! queue ! filesink location=test.ts
 
