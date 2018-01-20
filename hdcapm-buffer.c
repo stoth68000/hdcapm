@@ -194,3 +194,25 @@ void hdcapm_buffer_move_to_used(struct hdcapm_dev *dev, struct hdcapm_buffer *bu
 {
 	hdcapm_buffer_move(dev, buf, &dev->list_buf_used);
 }
+
+/* For debugging. Lock the buffer queue and measure how much data (in bytes)
+ * and how many items are on the list.
+ */
+int hdcapm_buffer_used_queue_stats(struct hdcapm_dev *dev, u64 *bytes, u64 *items)
+{
+	struct hdcapm_buffer *buf = NULL;
+	struct list_head *p = NULL, *q = NULL;
+
+	*bytes = 0;
+	*items = 0;
+
+	mutex_lock(&dev->dmaqueue_lock);
+	list_for_each_safe(p, q, &dev->list_buf_used) {
+		buf = list_entry(p, struct hdcapm_buffer, list);
+		(*bytes) += (buf->actual_size - buf->readpos);
+		(*items)++;
+	}
+	mutex_unlock(&dev->dmaqueue_lock);
+
+	return 0;
+}

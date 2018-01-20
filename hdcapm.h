@@ -244,6 +244,7 @@ void hdcapm_buffer_move_to_free(struct hdcapm_dev *dev, struct hdcapm_buffer *bu
 void hdcapm_buffer_move_to_used(struct hdcapm_dev *dev, struct hdcapm_buffer *buf);
 void hdcapm_buffer_add_to_free(struct hdcapm_dev *dev, struct hdcapm_buffer *buf);
 void hdcapm_buffer_add_to_used(struct hdcapm_dev *dev, struct hdcapm_buffer *buf);
+int hdcapm_buffer_used_queue_stats(struct hdcapm_dev *dev, u64 *bytes, u64 *items);
 
 /* -compressor.c */
 int  hdcapm_compressor_register(struct hdcapm_dev *dev);

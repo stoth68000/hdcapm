@@ -170,6 +170,7 @@ static int vidioc_log_status(struct file *file, void *priv)
 	struct hdcapm_fh *fh = file->private_data;
 	struct hdcapm_dev *dev = fh->dev;
 	struct hdcapm_statistics *s = dev->stats;
+	u64 q_used_bytes, q_used_items;
 
 	v4l2_info(&dev->v4l2_dev, "device_state:           %s\n",
 		dev->state == STATE_START ? "START" :
@@ -182,6 +183,11 @@ static int vidioc_log_status(struct file *file, void *priv)
 	v4l2_info(&dev->v4l2_dev, "codec_bytes_received:   %llu\n", s->codec_bytes_received);
 	v4l2_info(&dev->v4l2_dev, "codec_ts_not_yet_ready: %llu\n", s->codec_ts_not_yet_ready);
 	v4l2_info(&dev->v4l2_dev, "buffer_overrun:         %llu\n", s->buffer_overrun);
+
+	if (hdcapm_buffer_used_queue_stats(dev, &q_used_bytes, &q_used_items) == 0) {
+		v4l2_info(&dev->v4l2_dev, "q_used_bytes:           %llu\n", q_used_bytes);
+		v4l2_info(&dev->v4l2_dev, "q_used_items:           %llu\n", q_used_items);
+	}
 
 	kl_histogram_print_v4l2_device(&dev->v4l2_dev, &s->usb_read_call_interval);
 	kl_histogram_print_v4l2_device(&dev->v4l2_dev, &s->usb_read_sleeping);
