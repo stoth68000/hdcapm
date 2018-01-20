@@ -769,4 +769,6 @@ void hdcapm_compressor_run(struct hdcapm_dev *dev)
 	ret = firmware_transition(dev, 0, NULL);
 
 	dev->state = STATE_STOPPED;
+
+	hdcapm_buffers_move_all(dev, &dev->list_buf_free, &dev->list_buf_used);
 }
