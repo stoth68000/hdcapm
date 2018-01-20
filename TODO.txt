@@ -68,7 +68,13 @@ Updated: 2017-11-17
 24. Req 2.1.14 calls for the HDMI serial number to be dumped to system log. This isn't available
    in the HDMI address space. Can't meet this.
 
-25. Need to implement i-frame only mode.
+25. done. Need to implement i-frame only mode.
+
+26. done. Add metrics to measure internal buffer latency.
+
+27. done. Add support for MPEG_STREAM v4l2 ctl.
+
+28. done. Add support for v4l2 event notifications on SOURCE CHANGE.
 
 What streaming HAS been exercised (X86):
  - Video detection of all 1280x720p modes, p30 broken.
