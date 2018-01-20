@@ -344,6 +344,17 @@ static int vidioc_try_fmt_vid_cap(struct file *file, void *priv, struct v4l2_for
 	return vidioc_s_fmt_vid_cap(file, priv, f);
 }
 
+static int vidioc_subscribe_event(struct v4l2_fh *fh, const struct v4l2_event_subscription *sub)
+{
+	switch (sub->type) {
+	case V4L2_EVENT_SOURCE_CHANGE:
+		return v4l2_event_subscribe(fh, sub, 16, NULL);
+	default:
+		pr_warn(KBUILD_MODNAME ": event sub->type = 0x%x (UNKNOWN)\n", sub->type);
+	}
+	return v4l2_ctrl_subscribe_event(fh, sub);
+}
+
 static int vidioc_query_dv_timings(struct file *file, void *priv_fh, struct v4l2_dv_timings *timings)
 {
 	struct hdcapm_fh *fh = file->private_data;
@@ -373,7 +384,7 @@ static const struct v4l2_ioctl_ops mpeg_ioctl_ops =
 	.vidioc_g_fmt_vid_cap     = vidioc_g_fmt_vid_cap,
 	.vidioc_s_fmt_vid_cap     = vidioc_s_fmt_vid_cap,
 	.vidioc_try_fmt_vid_cap   = vidioc_try_fmt_vid_cap,
-	.vidioc_subscribe_event   = v4l2_ctrl_subscribe_event,
+	.vidioc_subscribe_event   = vidioc_subscribe_event,
 	.vidioc_unsubscribe_event = v4l2_event_unsubscribe,
 };
 
@@ -395,8 +406,8 @@ static int fops_open(struct file *file)
 
 	fh->dev = dev;
 	v4l2_fh_init(&fh->fh, video_devdata(file));
+	file->private_data = &fh->fh;
 	v4l2_fh_add(&fh->fh);
-	file->private_data = fh;
 
 	return 0;
 }

@@ -472,6 +472,36 @@ static enum hrtimer_restart _hrtimer_event(struct hrtimer *timer)
 }
 #endif
 
+/* sub-device events are pushed with v4l2_subdev_notify() and v4l2_subdev_notify_enent().
+ * They eventually make their way here.
+ * The bridge then forwards those events via v4l2_event_queue() to the v4l2_device,
+ * and so eventually they end up in userspace.
+ */
+static void hdcapm_notify(struct v4l2_subdev *sd, unsigned int notification, void *arg)
+{
+	struct hdcapm_dev *dev = container_of(sd->v4l2_dev, struct hdcapm_dev, v4l2_dev);
+	struct mst3367_source_detect *mst3367;
+
+	switch (notification) {
+	case MST3367_SOURCE_DETECT:
+		mst3367 = (struct mst3367_source_detect *)arg;
+#if 0
+		pr_info(KBUILD_MODNAME ": has signal = %d\n", mst3367->present);
+#endif
+		break;
+	case V4L2_DEVICE_NOTIFY_EVENT:
+		/*
+		 * Userspace can monitor for these with:
+		 * v4l2-ctl -d /dev/video2 --wait-for-event=source_change=0
+		 */
+		v4l2_event_queue(dev->v4l_device, arg);
+		break;
+	default:
+		pr_err(KBUILD_MODNAME ": unhandled notification = 0x%x\n", notification);
+		break;
+	}
+}
+
 static int hdcapm_usb_probe(struct usb_interface *interface, const struct usb_device_id *id)
 {
 	struct hdcapm_dev *dev;
@@ -565,6 +595,7 @@ static int hdcapm_usb_probe(struct usb_interface *interface, const struct usb_de
 	}
 
 	dev->v4l2_dev.release = hdcapm_usb_v4l2_release;
+	dev->v4l2_dev.notify = hdcapm_notify;
 
 	/* Configure a sub-device attachment for the HDMI receiver. */
 	memset(&mst3367_pdata, 0, sizeof(mst3367_pdata));

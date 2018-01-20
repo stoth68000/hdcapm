@@ -22,6 +22,7 @@
 #include <linux/delay.h>
 #include <linux/videodev2.h>
 #include <linux/workqueue.h>
+#include <media/v4l2-event.h>
 //#include <media/i2c/mst3367.h>
 #include "mst3367-drv.h"
 #include "mst3367-common.h"
@@ -165,10 +166,24 @@ static inline struct v4l2_subdev *to_sd(struct v4l2_ctrl *ctrl)
 
 static void mst3367_notify_source_detect(struct v4l2_subdev *sd, int haveSource)
 {
+	struct v4l2_event ev;
 	struct mst3367_source_detect msd;
 	msd.present = haveSource;
 
+	/* sub-device events get pushed to the bridge via hdcapm_notify().
+	 * The bridge then forwards those events on to the v4l2_device,
+	 * and eventually they end up in userspace.
+	 */
 	v4l2_subdev_notify(sd, MST3367_SOURCE_DETECT, (void *)&msd);
+
+	memset(&ev, 0, sizeof(ev));
+	ev.type = V4L2_EVENT_SOURCE_CHANGE;
+	ev.u.src_change.changes = V4L2_EVENT_SRC_CH_RESOLUTION;
+	/* Input 0 - This event requires that the id matches the input index
+	 * (when used with a video device node)
+	 */
+	ev.id = 0;
+	v4l2_subdev_notify_event(sd, &ev);
 }
 
 /* The MST 3367 has multiple I2C register maps, banks 0-3, if the
@@ -631,6 +646,18 @@ static int mst3367_isr(struct v4l2_subdev *sd, u32 status, bool *handled)
 	return 0;
 }
 
+static int mst3367_subscribe_event(struct v4l2_subdev *sd, struct v4l2_fh *fh, struct v4l2_event_subscription *sub)
+{
+	switch (sub->type) {
+	case V4L2_EVENT_SOURCE_CHANGE:
+		return v4l2_src_change_event_subdev_subscribe(sd, fh, sub);
+	case V4L2_EVENT_CTRL:
+		return v4l2_ctrl_subdev_subscribe_event(sd, fh, sub);
+	default:
+		return -EINVAL;
+	}
+}
+
 static const struct v4l2_subdev_core_ops mst3367_core_ops = {
 	.log_status = mst3367_log_status,
 #ifdef CONFIG_VIDEO_ADV_DEBUG
@@ -639,6 +666,8 @@ static const struct v4l2_subdev_core_ops mst3367_core_ops = {
 #endif
 	.s_power = mst3367_s_power,
 	.interrupt_service_routine = mst3367_isr,
+	.subscribe_event = mst3367_subscribe_event,
+	.unsubscribe_event = v4l2_event_subdev_unsubscribe,
 };
 
 /* Enable/disable mst3367 bus output */
