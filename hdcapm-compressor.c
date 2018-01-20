@@ -730,7 +730,7 @@ int hdcapm_compressor_register(struct hdcapm_dev *dev)
 
 	hdcapm_compressor_init_gpios(dev);
 
-	dprintk(1, "%s() Registered compressor\n", __func__);
+	pr_info(KBUILD_MODNAME ": Registered compressor\n");
 	return 0;
 }
 
