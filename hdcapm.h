@@ -187,6 +187,7 @@ struct hdcapm_statistics {
 	struct kl_histogram usb_buffer_acquire;
 	struct kl_histogram timer_callbacks;
 	struct kl_histogram hrtimer_callbacks;
+	struct kl_histogram v4l2_read_call_interval;
 };
 static __inline__ void hdcapm_core_statistics_reset(struct hdcapm_dev *dev)
 {
@@ -199,6 +200,7 @@ static __inline__ void hdcapm_core_statistics_reset(struct hdcapm_dev *dev)
 	kl_histogram_reset(&s->usb_buffer_acquire, "usb buffer free acquire", KL_BUCKET_VIDEO);
 	kl_histogram_reset(&s->usb_codec_transfer, "usb codec transfer", KL_BUCKET_VIDEO);
 	kl_histogram_reset(&s->usb_codec_status, "usb codec status read", KL_BUCKET_VIDEO);
+	kl_histogram_reset(&s->v4l2_read_call_interval, "v4l2 read() call interval", KL_BUCKET_VIDEO);
 #if TIMER_EVAL
 	kl_histogram_reset(&s->timer_callbacks, "timer cb intervals (1ms)", KL_BUCKET_VIDEO);
 	kl_histogram_reset(&s->hrtimer_callbacks, "hrtimer cb intervals (4ms)", KL_BUCKET_VIDEO);

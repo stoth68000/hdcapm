@@ -189,6 +189,7 @@ static int vidioc_log_status(struct file *file, void *priv)
 	kl_histogram_print_v4l2_device(&dev->v4l2_dev, &s->usb_buffer_handoff);
 	kl_histogram_print_v4l2_device(&dev->v4l2_dev, &s->usb_buffer_acquire);
 	kl_histogram_print_v4l2_device(&dev->v4l2_dev, &s->usb_codec_status);
+	kl_histogram_print_v4l2_device(&dev->v4l2_dev, &s->v4l2_read_call_interval);
 #if TIMER_EVAL
 	kl_histogram_print_v4l2_device(&dev->v4l2_dev, &s->timer_callbacks);
 	kl_histogram_print_v4l2_device(&dev->v4l2_dev, &s->hrtimer_callbacks);
@@ -443,15 +444,8 @@ static ssize_t fops_read(struct file *file, char __user *buffer,
 	int ret = 0;
 	int rem, cnt;
 	u8 *p;
-#if 0
-	port->last_read_msecs_diff = port->last_read_msecs;
-	port->last_read_msecs = jiffies_to_msecs(jiffies);
-	port->last_read_msecs_diff = port->last_read_msecs -
-		port->last_read_msecs_diff;
 
-	saa7164_histogram_update(&port->read_interval,
-		port->last_read_msecs_diff);
-#endif
+	kl_histogram_update(&dev->stats->v4l2_read_call_interval);
 
 	if (*pos) {
 		printk(KERN_ERR "%s() ESPIPE\n", __func__);
