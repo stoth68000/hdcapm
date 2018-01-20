@@ -878,9 +878,12 @@ static void mst3367_init_setup(struct v4l2_subdev *sd)
 {
 	int i;
 	u8 csctbl[] = {
-		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x10, 0x00, 0x20, 0x00, 0x00, 0x01, 0x20, 0x01,
+		0x40,
+		0x08, 0x02, 0x03, 0x65, 0x7E, 0x28, /* M11, M12, M13 */
+		0x78, 0xB9, 0x0B, 0x65, 0x79, 0xD6, /* M21, M22, M23 */
+		0x7F, 0x45, 0x01, 0x27, 0x08, 0x02, /* M31, M32, M33 */
+		0x20, 0x00, 0x02, 0x81, 0x20, 0x01, /*  A1,  A2,  A3 */
+		0x15, 0x95, 0x05, 0x20, 0xC0, 0x08
 	};
 
 	v4l2_dbg(1, debug, sd, "%s\n", __func__);
@@ -975,6 +978,10 @@ static void mst3367_init_setup(struct v4l2_subdev *sd)
 	MST3367_HDCP_RESET(sd);
 	MST3367_HDMI_RESET(sd);
 	mst3367_wr(sd, BANK0, 0x51, 0x89);
+#if 0
+	/* dvi mode? */
+	mst3367_wr(sd, BANK0, 0x51, 0x88);
+#endif
 	MST3367_TMDS_HOT_PLUG(sd, RX_TMDS_A_HPD_ON | RX_TMDS_A_LINK_ON);
 	mst3367_wr(sd, BANK0, 0xB7, 0x00);
 
@@ -988,10 +995,9 @@ static void mst3367_init_setup(struct v4l2_subdev *sd)
 	/* CSC */
 	mst3367_wr(sd, BANK0, 0x90, 0x15); /* Color Range */
 	mst3367_wr(sd, BANK0, 0x91, 0x15);
-	mst3367_wr(sd, BANK0, 0x92, 0x62);
 
 	for (i = 0; i < sizeof(csctbl); i++)
-		mst3367_wr(sd, BANK0, 0x93 + i, csctbl[i]);
+		mst3367_wr(sd, BANK0, 0x92 + i, csctbl[i]);
 
 	//mst3367_set(sd, BANK0, 0xB0, 0x25 ); /* RX_OUTPUT_YUV422 / 10.BITS / EXTERNAL SYNC */
 	//mst3367_set(sd, BANK0, 0xB0, 0x21 ); /* RX_OUTPUT_YUV422 / 08.BITS / EMBEDDED SYNC */
