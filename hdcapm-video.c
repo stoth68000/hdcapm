@@ -107,6 +107,9 @@ static int s_ctrl(struct v4l2_ctrl *ctrl)
 		}
 		dprintk(1, KBUILD_MODNAME ": %s(V4L2_CID_MPEG_VIDEO_H264_PROFILE) = %d\n", __func__, ctrl->val);
 		break;
+	case V4L2_CID_MPEG_STREAM_TYPE:
+		dprintk(1, KBUILD_MODNAME ": %s(V4L2_CID_MPEG_STREAM_TYPE) = %d\n", __func__, ctrl->val);
+		break;
 	default:
 		pr_err(KBUILD_MODNAME ": failed to handle ctrl->id 0x%x, value = %d\n", ctrl->id, ctrl->val);
 		ret = -EINVAL;
@@ -605,6 +608,12 @@ int hdcapm_video_register(struct hdcapm_dev *dev)
 			  (1 << V4L2_MPEG_VIDEO_H264_PROFILE_MAIN) |
 			  (1 << V4L2_MPEG_VIDEO_H264_PROFILE_HIGH)),
 		V4L2_MPEG_VIDEO_H264_PROFILE_HIGH);
+
+	v4l2_ctrl_new_std_menu(hdl, &ctrl_ops,
+		V4L2_CID_MPEG_STREAM_TYPE,
+		V4L2_MPEG_STREAM_TYPE_MPEG2_TS,
+		~(1 << V4L2_MPEG_STREAM_TYPE_MPEG2_TS),
+		V4L2_MPEG_STREAM_TYPE_MPEG2_TS);
 
 	/* Establish all default control values. */
 	v4l2_ctrl_handler_setup(hdl);
