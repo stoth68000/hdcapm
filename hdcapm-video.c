@@ -344,6 +344,13 @@ static int vidioc_try_fmt_vid_cap(struct file *file, void *priv, struct v4l2_for
 	return vidioc_s_fmt_vid_cap(file, priv, f);
 }
 
+static int vidioc_query_dv_timings(struct file *file, void *priv_fh, struct v4l2_dv_timings *timings)
+{
+	struct hdcapm_fh *fh = file->private_data;
+	struct hdcapm_dev *dev = fh->dev;
+	return v4l2_subdev_call(dev->sd, video, query_dv_timings, timings);
+}
+
 static const struct v4l2_ioctl_ops mpeg_ioctl_ops =
 {
 	.vidioc_enum_input        = vidioc_enum_input,
@@ -359,6 +366,7 @@ static const struct v4l2_ioctl_ops mpeg_ioctl_ops =
 #endif
 	.vidioc_g_dv_timings      = vidioc_g_dv_timings,
 	.vidioc_s_dv_timings      = vidioc_s_dv_timings,
+	.vidioc_query_dv_timings  = vidioc_query_dv_timings,
 	.vidioc_enum_dv_timings   = vidioc_enum_dv_timings,
 	.vidioc_dv_timings_cap    = vidioc_dv_timings_cap,
 	.vidioc_enum_fmt_vid_cap  = vidioc_enum_fmt_vid_cap,
