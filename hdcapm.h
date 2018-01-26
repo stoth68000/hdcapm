@@ -59,6 +59,15 @@ extern int hdcapm_debug;
 #define PIPE_EP4 0x04
 
 #define TIMER_EVAL 0
+
+/* The driver started development by loading the firmware once
+ * during startup, unlike the windows driver that loads the
+ * firmware before every capture session. (ONETIME = 1).
+ * During later development, we found that if we don't load the
+ * firmware before ever capture, we lose audio in the second
+ * and subsequent capture.
+ * With ONETIME = 0 we load the firm whenever a capture starts.
+ */
 #define ONETIME_FW_LOAD 0
 
 extern struct usb_device_id hdcapm_usb_id_table[];
