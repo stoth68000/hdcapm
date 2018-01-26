@@ -177,6 +177,7 @@ static int vidioc_log_status(struct file *file, void *priv)
 	struct hdcapm_dev *dev = fh->dev;
 	struct hdcapm_statistics *s = dev->stats;
 	u64 q_used_bytes, q_used_items;
+	struct hdcapm_encoder_parameters *p = &dev->encoder_parameters;
 
 	v4l2_info(&dev->v4l2_dev, "device_state:           %s\n",
 		dev->state == STATE_START ? "START" :
@@ -189,6 +190,13 @@ static int vidioc_log_status(struct file *file, void *priv)
 	v4l2_info(&dev->v4l2_dev, "codec_bytes_received:   %llu\n", s->codec_bytes_received);
 	v4l2_info(&dev->v4l2_dev, "codec_ts_not_yet_ready: %llu\n", s->codec_ts_not_yet_ready);
 	v4l2_info(&dev->v4l2_dev, "buffer_overrun:         %llu\n", s->buffer_overrun);
+
+	if (p->output_width && p->output_height) {
+		v4l2_info(&dev->v4l2_dev, "video_scaler_output:    %dx%d\n",
+			p->output_width, p->output_height);
+	} else {
+		v4l2_info(&dev->v4l2_dev, "video_scaler_output:    [native 1:1]\n");
+	}
 
 	if (hdcapm_buffer_used_queue_stats(dev, &q_used_bytes, &q_used_items) == 0) {
 		v4l2_info(&dev->v4l2_dev, "q_used_bytes:           %llu\n", q_used_bytes);
@@ -316,18 +324,29 @@ static int vidioc_g_fmt_vid_cap(struct file *file, void *priv, struct v4l2_forma
 {
 	struct hdcapm_fh *fh = file->private_data;
 	struct hdcapm_dev *dev = fh->dev;
+	struct hdcapm_encoder_parameters *p = &dev->encoder_parameters;
 	struct v4l2_dv_timings timings;
 
 	if (v4l2_subdev_call(dev->sd, video, g_dv_timings, &timings) < 0)
 		return -EINVAL;
 
-	f->fmt.pix.pixelformat  = V4L2_PIX_FMT_MPEG;
-	f->fmt.pix.bytesperline = 0;
-	f->fmt.pix.sizeimage    = 188 * 312;
-	f->fmt.pix.colorspace   = V4L2_COLORSPACE_SMPTE170M;
-	f->fmt.pix.width        = timings.bt.width;
-	f->fmt.pix.height       = timings.bt.height;
-	f->fmt.pix.field        = V4L2_FIELD_NONE;
+	f->fmt.pix.pixelformat    = V4L2_PIX_FMT_MPEG;
+	f->fmt.pix.bytesperline   = 0;
+	f->fmt.pix.sizeimage      = 188 * 312;
+	f->fmt.pix.colorspace     = V4L2_COLORSPACE_SMPTE170M;
+
+	if (p->output_width)
+		f->fmt.pix.width  = p->output_width;
+	else
+		f->fmt.pix.width  = timings.bt.width;
+
+	if (p->output_height)
+		f->fmt.pix.height = p->output_height;
+	else
+		f->fmt.pix.height = timings.bt.width;
+
+	f->fmt.pix.height         = timings.bt.height;
+	f->fmt.pix.field          = V4L2_FIELD_NONE;
 
 	return 0;
 }
@@ -336,10 +355,18 @@ static int vidioc_s_fmt_vid_cap(struct file *file, void *priv, struct v4l2_forma
 {
 	struct hdcapm_fh *fh = file->private_data;
 	struct hdcapm_dev *dev = fh->dev;
+	struct hdcapm_encoder_parameters *p = &dev->encoder_parameters;
 	struct v4l2_dv_timings timings;
 
 	if (v4l2_subdev_call(dev->sd, video, g_dv_timings, &timings) < 0)
 		return -EINVAL;
+
+	/* Its not clear to me if the input resolution changes, if we're required
+	 * to preserve the users requested width and height, or default it back
+	 * to 1:1 with the input signal.
+	 */
+	p->output_width = f->fmt.pix.width;
+	p->output_height = f->fmt.pix.height;
 
 	f->fmt.pix.pixelformat  = V4L2_PIX_FMT_MPEG;
 	f->fmt.pix.bytesperline = 0;

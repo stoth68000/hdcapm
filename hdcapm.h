@@ -88,6 +88,13 @@ struct hdcapm_encoder_parameters {
 	u32 h264_level; /* H264 profile 4.1 etc */
 	u32 h264_entropy_mode; /* CABAC = 1 / CAVLC = 0 */
 	u32 h264_mode; /* VBR = 1, CBR = 0 */
+
+	/* Typically these map 1:1 to the detected timing
+	 * resolution, but these could be modified bu
+	 * s_fmt to invoke the hardware video scaler.
+	 */
+	u32 output_width;
+	u32 output_height;
 };
 
 struct hdcapm_fh {
