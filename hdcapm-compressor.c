@@ -538,39 +538,43 @@ int hdcapm_compressor_register(struct hdcapm_dev *dev)
 	u32 offset;
 	int ret;
 
+	hdcapm_compressor_enable_firmware(dev, 0);
+
+// pl330b_lib_reinit
 	hdcapm_write32(dev, REG_081C, 0x00004000);
 	hdcapm_write32(dev, REG_0820, 0x00103FFF);
 	hdcapm_write32(dev, REG_0824, 0x00000000);
+
 	hdcapm_write32(dev, REG_0828, 0x00104000);
 	hdcapm_write32(dev, REG_082C, 0x00203FFF);
 	hdcapm_write32(dev, REG_0830, 0x00100000);
+
 	hdcapm_write32(dev, REG_0834, 0x00204000);
 	hdcapm_write32(dev, REG_0838, 0x00303FFF);
 	hdcapm_write32(dev, REG_083C, 0x00200000);
+
 	hdcapm_write32(dev, REG_0840, 0x70003124);
 	hdcapm_write32(dev, REG_0840, 0x90003124);
 
-#if 0
-	hdcapm_read32(dev, REG_0038, &val);
-	dprintk(1, "%08x = %08x\n", REG_0038, val);
-//	BUG_ON(val != 0x00010020);
-#endif
+	/* Hardware ID? Only every read, never written */
+	if (hdcapm_read32(dev, REG_0038, &val) < 0) {
+		pr_err(KBUILD_MODNAME ": USB read failure, chip id check failed, aborting.\n");
+		return -EINVAL;
+	}
+	dprintk(1, "chiprev? [%08x = %08x]\n", REG_0038, val);
+	BUG_ON(val != 0x00010020);
 
+#if ONETIME_FW_LOAD
 	hdcapm_write32(dev, REG_GPIO_OE, 0x00000000);
 	hdcapm_write32(dev, REG_GPIO_DATA_WR, 0x00000000);
-
-#if 0
-	hdcapm_read32(dev, REG_0050, &val);
-	dprintk(1, "%08x = %08x\n", REG_0050, val);
-//	BUG_ON(val != 0x00200406);
 #endif
 
-	hdcapm_write32(dev, REG_0050, 0x00200406);
+	/* Disable audio / video outputs (bits 1/2). */
+	hdcapm_write32(dev, REG_0050, 0x00200400);
 	hdcapm_read32(dev, REG_0050, &val);
-#if 0
+
 	dprintk(1, "%08x = %08x\n", REG_0050, val);
-//	BUG_ON(val != 0x00200406);
-#endif
+	BUG_ON(val != 0x00200400);
 
 	/* Give the device enough time to boot its initial microcode. */
 	msleep(1000);
@@ -607,9 +611,13 @@ int hdcapm_compressor_register(struct hdcapm_dev *dev)
 #endif
 
 	// 17588
+	/* Disable audio and video outputs. */
 	hdcapm_write32(dev, REG_0050, 0x00200406);
+
+#if ONETIME_FW_LOAD
 	hdcapm_write32(dev, REG_GPIO_OE, 0x00000000);
 	hdcapm_write32(dev, REG_GPIO_DATA_WR, 0x00000000);
+#endif
 
 	hdcapm_read32(dev, REG_0000, &val);
 #if 0
@@ -739,7 +747,9 @@ int hdcapm_compressor_register(struct hdcapm_dev *dev)
 
 	msleep(100);
 
+#if ONETIME_FW_LOAD
 	hdcapm_compressor_init_gpios(dev);
+#endif
 
 	pr_info(KBUILD_MODNAME ": Registered compressor\n");
 	return 0;
@@ -759,6 +769,8 @@ void hdcapm_compressor_run(struct hdcapm_dev *dev)
 	printk("%s()\n", __func__);
 
 	if (v4l2_subdev_call(dev->sd, video, g_dv_timings, &timings) < 0) {
+		pr_err("%s() subdev call failed\n", __func__);
+		dev->state = STATE_STOPPED;
 		return;
 	}
 
@@ -777,8 +789,8 @@ void hdcapm_compressor_run(struct hdcapm_dev *dev)
 #endif
 
 	hdcapm_read32(dev, REG_0050, &val);
-	val &= ~0x04;
-	val &= ~0x02;
+	val &= ~(1 << 1);
+	val &= ~(1 << 2);
 	hdcapm_write32(dev, REG_0050, val);
 
 	ret = firmware_transition(dev, 1, &timings);
@@ -791,10 +803,23 @@ void hdcapm_compressor_run(struct hdcapm_dev *dev)
 		kl_histogram_sample_complete(&dev->stats->usb_read_sleeping);
 	}
 
+        hdcapm_read32(dev, REG_0050, &val);
+        val |= (1 << 1);
+        val |= (1 << 2);
+        hdcapm_write32(dev, REG_0050, val);
+
 	ret = firmware_transition(dev, 0, NULL);
 
 #if !(ONETIME_FW_LOAD)
 	hdcapm_compressor_unregister(dev);
+	hdcapm_compressor_init_gpios(dev);
+
+	/* Reloading the firmware disturbs the GPIOs and
+	 * causes the MST3367 to go into reset.
+	 * Be kind, tell the HDMI receiver to
+	 * reconfigure itself.
+	 */
+	v4l2_subdev_call(dev->sd, core, s_power, 1);
 #endif
 
 	dev->state = STATE_STOPPED;

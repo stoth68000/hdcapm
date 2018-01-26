@@ -586,6 +586,8 @@ static int hdcapm_usb_probe(struct usb_interface *interface, const struct usb_de
 		ret = -EINVAL;
 		goto fail4;
 	}
+#else
+	hdcapm_compressor_init_gpios(dev);
 #endif
 
 	/* Attach HDMI receiver */

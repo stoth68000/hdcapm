@@ -501,7 +501,8 @@ static ssize_t fops_read(struct file *file, char __user *buffer,
 	if ((file->f_flags & O_NONBLOCK) == 0) {
 		if (wait_event_interruptible(dev->wait_read, hdcapm_buffer_peek_used(dev))) {
 				printk(KERN_ERR "%s() ERESTARTSYS\n", __func__);
-				return -ERESTARTSYS;
+				//return -ERESTARTSYS;
+				return -EINVAL;
 		}
 	}
 
