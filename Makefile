@@ -44,7 +44,7 @@ clean:
 load:	intel
 	sudo dmesg -c >/dev/null
 	sudo cp v4l-hdcapm-vidfw-01.fw /lib/firmware
-	sudo cp v4l-hdcapm-audfw-0?.fw /lib/firmware
+	sudo cp v4l-hdcapm-audfw-01.fw /lib/firmware
 	sudo modprobe cx23885
 	sudo modprobe saa7164
 	sudo modprobe v4l2-dv-timings
