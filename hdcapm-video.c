@@ -61,6 +61,12 @@ static int s_ctrl(struct v4l2_ctrl *ctrl)
 	case V4L2_CID_MPEG_VIDEO_GOP_SIZE:
 		dprintk(1, KBUILD_MODNAME ": %s(V4L2_CID_MPEG_VIDEO_GOP_SIZE) = %d\n", __func__, ctrl->val);
 		p->gop_size = ctrl->val;
+
+		/* If we're in VBR mode GOP 1 looks bad, force a change to CBR. */
+		if (p->gop_size == 1 && p->h264_mode == 1) {
+			pr_info(KBUILD_MODNAME ": GOP size 1 produces poor quality, switching from VBR to CBR\n");
+			p->h264_mode = 0;
+		}
 		break;
 	case V4L2_CID_MPEG_VIDEO_H264_LEVEL:
 		switch (ctrl->val) {
