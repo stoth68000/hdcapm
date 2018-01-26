@@ -260,7 +260,9 @@ static int firmware_transition(struct hdcapm_dev *dev, int run, struct v4l2_dv_t
 
 		i_fps = timing_fpsx100 / 100;
 
-// v4l2-ctl -d /dev/video2 --set-fmt-video=width=640,height=360
+		/* If the user has requested a different output resolution via
+		 * set/try fmt, obey.
+		 */
 		if (p->output_width)
 			o_width  = p->output_width;
 		else
@@ -281,7 +283,6 @@ static int firmware_transition(struct hdcapm_dev *dev, int run, struct v4l2_dv_t
 		}
 
 		cfg[ 0] = 0x00000001;
-//MMM
 		cfg[ 1] = 0x21010019 |
 			(dev->encoder_parameters.h264_level << 12) |
 			(dev->encoder_parameters.h264_entropy_mode << 26) |
