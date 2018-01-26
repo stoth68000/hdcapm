@@ -227,6 +227,8 @@ static const u32 cmd_30[] = {
 
 static int firmware_transition(struct hdcapm_dev *dev, int run, struct v4l2_dv_timings *timings)
 {
+	struct hdcapm_encoder_parameters *p = &dev->encoder_parameters;
+
 	/* 29298 in LGPEncoder/complete-trace.tdc */
 	u32 cfg[12];
 
@@ -258,8 +260,17 @@ static int firmware_transition(struct hdcapm_dev *dev, int run, struct v4l2_dv_t
 
 		i_fps = timing_fpsx100 / 100;
 
-		o_width  = i_width;
-		o_height = i_height;
+// v4l2-ctl -d /dev/video2 --set-fmt-video=width=640,height=360
+		if (p->output_width)
+			o_width  = p->output_width;
+		else
+			o_width  = i_width;
+
+		if (p->output_width)
+			o_height = p->output_height;
+		else
+			o_height = i_height;
+
 		o_fps    = i_fps;
 
 		/* Scaling. Adjust width, height and output fps. */
@@ -464,7 +475,7 @@ static int usb_read(struct hdcapm_dev *dev)
 	return 0;
 }
 
-static void hdcapm_compressor_init_gpios(struct hdcapm_dev *dev)
+void hdcapm_compressor_init_gpios(struct hdcapm_dev *dev)
 {
 	// 38045 - bit toggling, gpios
 
