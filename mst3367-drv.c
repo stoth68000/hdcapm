@@ -465,6 +465,7 @@ HDCP_MD 0
 			mst3367_notify_source_detect(sd, state->haveSource);
 		}
 	} else {
+		memset(&state->currentTimings, 0, sizeof(state->currentTimings));
 		state->detectedSignal = 0;
 		if (state->haveSource) {
 			state->haveSource = 0;
