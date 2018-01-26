@@ -11,7 +11,7 @@ Updated: 2017-11-17
 
 4. EDID software loading to be investigated.
 
-5. Repeated attempts to start a capture can result in no audio being present.
+5. done. Repeated attempts to start a capture can result in no audio being present.
    The firmware likely has to be reloaded (as per the window driver) between
    attempts.
 
@@ -24,8 +24,12 @@ Updated: 2017-11-17
 8. Occasionaly USB hangs on x86 and ARM require the stick to be disconnected
    and reconnected. Rare, but they do happen, or can happen during firmware load.
 
-9. Video scaling via V4L2 APIs to be implemented.
+9. done. Video scaling via V4L2 APIs to be implemented.
    Proven its working directly in driver, need APIs to drive it.
+   v4l2-ctl -d /dev/video2 --set-fmt-video=width=640,height=360
+   This forces the scaler to output any arbitrary value, good or bad.
+   --get-ft-video will query the current scaler settings if enable.
+   --get-dv-timing will always return the actually detected signal resolution.
 
 10. HDMI 1280x720p30 fails to detect reliably, if at all.
     Check this with the windows s/w and see if its capable.
@@ -76,6 +80,10 @@ Updated: 2017-11-17
 
 28. done. Add support for v4l2 event notifications on SOURCE CHANGE.
 
+29. Are we still seeing white blips/pixel corrupting (small / minor) in the video, 3-6 adjactent pixels?
+
+30. CBR 18Mbps gop length 1 recording (720p60) came out at 90Mbps. Why?
+
 What streaming HAS been exercised (X86):
  - Video detection of all 1280x720p modes, p30 broken.
  - Test     75m 1280x720p60 (tivo HDCP). 10mbps, no issues, watching live in VLC (streaming via UDP).
@@ -87,6 +95,7 @@ What streaming HAS been exercised (X86):
  - Test briefly 1920x1080p30 (no hdcp), 10mbps.
  - Test briefly 1920x1080p60 (no hdcp), 10mbps. (didn't framedrop as reported by vlc?)
  - Correctly detecting and handling HDCP vs non HDCP
+ - Test     15m 1280x720p60 (Nintendo mini). VBR 18mbps, watching live in VLC (streaming via UDP).
 
 What HAS been tested (ARM):
  - Video detection of all 1280x720p modes, p30 broken.
