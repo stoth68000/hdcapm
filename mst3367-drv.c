@@ -42,6 +42,9 @@ MODULE_LICENSE("GPL");
 #define DUMP_SHADOWS 0
 #define DUMP_REGISTERS 0
 
+static void mst3367_init_setup(struct v4l2_subdev *sd);
+static void mst3367_audio_setup(struct v4l2_subdev *sd);
+
 /*
 This is how the register map was modified by the windows
 driver during the i2c-trace-driver-init-with-1080-signal.csv
@@ -632,6 +635,8 @@ static int mst3367_s_power(struct v4l2_subdev *sd, int on)
 	state->power_on = on;
 	if (on) {
 		/* Power up */
+		mst3367_init_setup(sd);
+		mst3367_audio_setup(sd);
 	} else {
 		/* Power down */
 	}
