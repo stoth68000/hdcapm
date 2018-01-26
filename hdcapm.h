@@ -58,6 +58,16 @@ extern int hdcapm_debug;
 #define PIPE_EP3 0x83
 #define PIPE_EP4 0x04
 
+/* The scheduler on ARM/RDU2 uses a different quanta, probably 20ms.
+ * on X86 its 10. This skews our hard timing when polling the
+ * codec memory levels (and downloading payload).
+ * SOme discussion was had re hires timers for ARM and how they may
+ * be more accurate.
+ * They're not, they just trade CPU cycles for more accurate timing.
+ * Enable this to evaluate ARM hires timers and look for the histogram
+ * results in the --log-status output, they show how accurate the
+ * kernel is for certain requested sleep intervals.
+ */
 #define TIMER_EVAL 0
 
 /* The driver started development by loading the firmware once
