@@ -46,8 +46,19 @@
 
  */
 
+/* Bit 13: Cleared during initialization, stall h/w
+ */
 #define REG_0000 0x000
+
+/* Register is read but never written to.
+ * Hardware version / chip id?
+ */
 #define REG_0038 0x038
+
+/* Bit 0,3-7: Unknown
+ *     1: Low when audio output is required, high when disabled.
+ *     2: Low when video output is required, high when disabled.
+ */
 #define REG_0050 0x050
 
 #define REG_I2C_XACT  0x500
