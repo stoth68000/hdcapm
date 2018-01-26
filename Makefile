@@ -44,7 +44,7 @@ clean:
 load:	intel
 	sudo dmesg -c >/dev/null
 	sudo cp v4l-hdcapm-vidfw-01.fw /lib/firmware
-	sudo cp v4l-hdcapm-audfw-01.fw /lib/firmware
+	sudo cp v4l-hdcapm-audfw-0?.fw /lib/firmware
 	sudo modprobe cx23885
 	sudo modprobe saa7164
 	sudo modprobe v4l2-dv-timings
@@ -69,14 +69,41 @@ sshcopy:
 	#ssh root@192.168.0.11 "cat >/lib/firmware/v4l-hdcapm-vidfw-01.fw" < v4l-hdcapm-vidfw-01.fw
 	#ssh root@192.168.0.11 "cat >/lib/firmware/v4l-hdcapm-audfw-01.fw" < v4l-hdcapm-audfw-01.fw
 
+scaler:
+	# CBR, GOP len 1, 3Mb, scaler output is 640x360
+	v4l2-ctl -d $(DEVICE) --set-ctrl=video_bitrate=6000000
+	v4l2-ctl -d $(DEVICE) --set-ctrl=video_peak_bitrate=6000000
+	v4l2-ctl -d $(DEVICE) --set-ctrl=video_gop_size=1
+	v4l2-ctl -d $(DEVICE) --set-ctrl=video_bitrate_mode=1
+	v4l2-ctl -d /dev/video2 --set-fmt-video=width=640,height=360
+
+	iso13818_util -i $(DEVICE) -o udp://192.168.0.66:5005 -s
+
 stream:
+	# Main 4.1
+#	v4l2-ctl -d $(DEVICE) --set-ctrl=h264_profile=2
+#	v4l2-ctl -d $(DEVICE) --set-ctrl=h264_level=12
+
+	# High 5.1
+#	v4l2-ctl -d $(DEVICE) --set-ctrl=h264_profile=4
+#	v4l2-ctl -d $(DEVICE) --set-ctrl=h264_level=15
+
 	v4l2-ctl -d $(DEVICE) --set-ctrl=video_bitrate=10000000
 	v4l2-ctl -d $(DEVICE) --set-ctrl=video_peak_bitrate=10000000
 	v4l2-ctl -d $(DEVICE) --set-ctrl=video_gop_size=1
+
+	# VBR
+#	v4l2-ctl -d $(DEVICE) --set-ctrl=video_bitrate_mode=0
+
+	# CBR
+#	v4l2-ctl -d $(DEVICE) --set-ctrl=video_bitrate_mode=1
 	iso13818_util -i $(DEVICE) -o udp://192.168.0.66:5005 -s
 
 gstreamer:
 	#gst-launch-1.0 v4l2src device=$(DEVICE) io-mode=1 ! video/mpegts,systemstream=true ! queue ! udpsink host=192.168.0.66 port=5005
 	#gst-launch-1.0 v4l2src device=$(DEVICE) io-mode=1 ! video/mpegts,systemstream=true ! queue ! udpsink host=192.168.0.66 port=5005 buffer-size=1316
 	gst-launch-1.0 v4l2src device=$(DEVICE) io-mode=1 ! video/mpegts,systemstream=true ! queue ! filesink location=test.ts
+
+snapshot:
+	tar zcf ../hdcapm-dev-$(shell date +%Y%m%d-%H%M%S).tgz .
 
