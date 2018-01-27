@@ -789,6 +789,7 @@ void hdcapm_compressor_run(struct hdcapm_dev *dev)
 	}
 #endif
 
+	/* Enable audio and video outputs. */
 	hdcapm_read32(dev, REG_0050, &val);
 	val &= ~(1 << 1);
 	val &= ~(1 << 2);
@@ -804,6 +805,7 @@ void hdcapm_compressor_run(struct hdcapm_dev *dev)
 		kl_histogram_sample_complete(&dev->stats->usb_read_sleeping);
 	}
 
+	/* Disable audio and video outputs. */
         hdcapm_read32(dev, REG_0050, &val);
         val |= (1 << 1);
         val |= (1 << 2);
