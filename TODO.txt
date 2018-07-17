@@ -84,6 +84,8 @@ Updated: 2017-11-17
 
 30. CBR 18Mbps gop length 1 recording (720p60) came out at 90Mbps. Why?
 
+31. Abnormal driver behaviour when loaded, then started with DD without using any v4l2-ctl commands.
+
 What streaming HAS been exercised (X86):
  - Video detection of all 1280x720p modes, p30 broken.
  - Test     75m 1280x720p60 (tivo HDCP). 10mbps, no issues, watching live in VLC (streaming via UDP).
